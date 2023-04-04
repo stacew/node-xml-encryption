@@ -45,6 +45,12 @@ describe('encrypt', function() {
       encryptionAlgorithm: 'http://www.w3.org/2001/04/xmlenc#tripledes-cbc',
       keyEncryptionAlgorithm: 'http://www.w3.org/2001/04/xmlenc#rsa-1_5'
     }
+  },{
+    name: 'des-ede3-cbc',
+    encryptionOptions: {
+      encryptionAlgorithm: 'http://www.w3.org/2001/04/xmlenc#kw-tripledes',
+      keyEncryptionAlgorithm: 'http://www.w3.org/2001/04/xmlenc#rsa-1_5'
+    }
   }];
 
   algorithms.forEach(function (algorithm) {
@@ -104,6 +110,27 @@ describe('encrypt', function() {
       key: fs.readFileSync(__dirname + '/test-auth0.key'),
       encryptionAlgorithm: 'http://www.w3.org/2001/04/xmlenc#tripledes-cbc',
       keyEncryptionAlgorithm: 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p'
+      }
+      xmlenc.encrypt('encrypt me', options, function(err, result) {
+        xmlenc.decrypt(result,
+          { key: fs.readFileSync(__dirname + '/test-auth0.key'),
+            disallowDecryptionWithInsecureAlgorithm: true},
+          function (err, decrypted) {
+            assert(err);
+            assert(!decrypted);
+            done();
+        });
+      });
+    });
+
+    it('should fail decryption when disallowDecryptionWithInsecureAlgorithm is set', function(done) {
+      const options = {
+        rsa_pub: fs.readFileSync(__dirname + '/test-auth0_rsa.pub'),
+        pem: fs.readFileSync(__dirname + '/test-auth0.pem'),
+        key: fs.readFileSync(__dirname + '/test-auth0.key'),
+        disallowEncryptionWithInsecureAlgorithm: true,
+        encryptionAlgorithm: 'http://www.w3.org/2001/04/xmlenc#kw-tripledes',
+        keyEncryptionAlgorithm: 'http://www.w3.org/2001/04/xmlenc#rsa-oaep-mgf1p'
       }
       xmlenc.encrypt('encrypt me', options, function(err, result) {
         xmlenc.decrypt(result,
